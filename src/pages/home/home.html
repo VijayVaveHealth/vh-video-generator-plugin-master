@@ -1,0 +1,64 @@
+<ion-header>
+  <ion-navbar>
+    <ion-title>
+      Home
+    </ion-title>
+  </ion-navbar>
+</ion-header>
+
+<ion-content class="HomePage">
+  <ion-card>
+    <ion-card-content>
+      Hello World, this is my test app
+
+      Choose Picture:
+
+      <p>Class 0:</p>
+      <ion-row>
+        <ion-col col-4><img src="assets/imgs/0/0frame1.png" alt="your image" id="testImage01" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/0/0frame2.png" alt="your image" id="testImage02" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/0/0frame3.png" alt="your image" id="testImage03" (click)="classify($event)"></ion-col>
+      </ion-row>
+      <p>Class 1:</p>
+      <ion-row>
+        <ion-col col-6><img src="assets/imgs/1/1frame1.png" alt="your image" id="testImage11" (click)="classify($event)"></ion-col>
+        <ion-col col-6><img src="assets/imgs/1/1frame2.png" alt="your image" id="testImage12" (click)="classify($event)"></ion-col>
+      </ion-row>
+      <p>Class 2:</p>
+      <ion-row>
+        <ion-col col-4><img src="assets/imgs/2/2frame1.png" alt="your image" id="testImage21" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/2/2frame2.png" alt="your image" id="testImage22" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/2/2frame3.png" alt="your image" id="testImage23" (click)="classify($event)"></ion-col>
+        <ion-col col-6><img src="assets/imgs/2/2frame4.png" alt="your image" id="testImage24" (click)="classify($event)"></ion-col>
+        <ion-col col-6><img src="assets/imgs/2/2frame5.png" alt="your image" id="testImage25" (click)="classify($event)"></ion-col>
+      </ion-row>
+      <p>Class 3:</p>
+      <ion-row>
+        <ion-col col-6><img src="assets/imgs/3/3frame1.png" alt="your image" id="testImage31" (click)="classify($event)"></ion-col>
+        <ion-col col-6><img src="assets/imgs/3/3frame2.png" alt="your image" id="testImage32" (click)="classify($event)"></ion-col>
+      </ion-row>
+      <p>Class 4:</p>
+      <ion-row>
+        <ion-col col-4><img src="assets/imgs/4/4frame1.png" alt="your image" id="testImage41" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/4/4frame2.png" alt="your image" id="testImage42" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/4/4frame3.png" alt="your image" id="testImage43" (click)="classify($event)"></ion-col>
+      </ion-row>
+      <p>Class 5:</p>
+      <ion-row>
+        <ion-col col-4><img src="assets/imgs/5/5frame1.png" alt="your image" id="testImage51" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/5/5frame2.png" alt="your image" id="testImage52" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/5/5frame3.png" alt="your image" id="testImage53" (click)="classify($event)"></ion-col>
+        <ion-col col-6><img src="assets/imgs/5/5frame4.png" alt="your image" id="testImage54" (click)="classify($event)"></ion-col>
+        <ion-col col-6><img src="assets/imgs/5/5frame5.png" alt="your image" id="testImage55" (click)="classify($event)"></ion-col>
+      </ion-row>
+      <p>Class 6:</p>
+      <ion-row>
+        <ion-col col-4><img src="assets/imgs/6/6frame1.png" alt="your image" id="testImage61" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/6/6frame2.png" alt="your image" id="testImage62" (click)="classify($event)"></ion-col>
+        <ion-col col-4><img src="assets/imgs/6/6frame3.png" alt="your image" id="testImage63" (click)="classify($event)"></ion-col>
+      </ion-row>
+      <canvas id="canvas"></canvas>
+      <p *ngIf="logg">{{logg}}</p>
+    </ion-card-content>
+  </ion-card>
+</ion-content>

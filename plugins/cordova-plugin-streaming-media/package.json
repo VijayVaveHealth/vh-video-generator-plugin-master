@@ -1,0 +1,60 @@
+{
+  "_from": "git+https://github.com/nchutchind/cordova-plugin-streaming-media.git",
+  "_id": "cordova-plugin-streaming-media@2.2.0",
+  "_inBundle": false,
+  "_integrity": "",
+  "_location": "/cordova-plugin-streaming-media",
+  "_phantomChildren": {},
+  "_requested": {
+    "type": "git",
+    "raw": "https://github.com/nchutchind/cordova-plugin-streaming-media",
+    "rawSpec": "https://github.com/nchutchind/cordova-plugin-streaming-media",
+    "saveSpec": "git+https://github.com/nchutchind/cordova-plugin-streaming-media.git",
+    "fetchSpec": "https://github.com/nchutchind/cordova-plugin-streaming-media.git",
+    "gitCommittish": null
+  },
+  "_requiredBy": [
+    "#USER",
+    "/"
+  ],
+  "_resolved": "git+https://github.com/nchutchind/cordova-plugin-streaming-media.git#90e3df77ec7be09b6dfe658aae4dbc5408e23f89",
+  "_spec": "https://github.com/nchutchind/cordova-plugin-streaming-media",
+  "_where": "/Users/arsu/helloWorld",
+  "author": {
+    "name": "Nicholas Hutchind"
+  },
+  "bugs": {
+    "url": "https://github.com/nchutchind/Streaming-Media-Cordova-Plugin/issues"
+  },
+  "bundleDependencies": false,
+  "contributors": [
+    {
+      "name": "Timothy Shamilov"
+    },
+    {
+      "name": "Michael Robinson"
+    }
+  ],
+  "deprecated": false,
+  "description": "This plugin allows you to stream audio and video in a fullscreen, native player on iOS and Android.",
+  "homepage": "https://github.com/nchutchind/Streaming-Media-Cordova-Plugin#readme",
+  "keywords": [
+    "media",
+    "streaming",
+    "ecosystem:cordova",
+    "cordova-ios",
+    "cordova-android",
+    "cordova-fireos"
+  ],
+  "license": "MIT",
+  "main": "index.js",
+  "name": "cordova-plugin-streaming-media",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/nchutchind/Streaming-Media-Cordova-Plugin.git"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "version": "2.2.0"
+}
