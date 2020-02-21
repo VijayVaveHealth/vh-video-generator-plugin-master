@@ -45,8 +45,7 @@ enum RecordingResult {
         self.commandDelegate.run() { [unowned self] in
          guard let options = command.argument(at: 0) as? [String: Int] else {
              let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
-                                                       messageAs: "There was an error with the parameters you passed. Please pass first the base64 encoded data" +
-                                                                  "and then the type of the data (0: PNG, 1: byte array)")
+                                                       messageAs: DSError.initParametersFormatFailed)
                 self.commandDelegate!.send(pluginResult,
                                            callbackId: command.callbackId)
                 return
@@ -60,14 +59,13 @@ enum RecordingResult {
                     self.tempFilePath = newFileUrl()
                     try self.setupProcessedVideoWriter(path: self.tempFilePath)
                     self.processedVideoWriter?.startWriting()
-                    self.processedVideoWriter?.startSession(atSourceTime: kCMTimeZero)
+                    self.processedVideoWriter?.startSession(atSourceTime: CMTime.zero)
                      let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
                      self.commandDelegate!.send(pluginResult,
                                        callbackId: command.callbackId)
                 } catch {
                     let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
-                                                       messageAs: "There was an error with the parameters you passed. Please pass first the base64 encoded data" +
-                                                                  "and then the type of the data (0: PNG, 1: byte array)")
+                                                       messageAs: DSError.initParametersFailed)
                 self.commandDelegate!.send(pluginResult,
                                            callbackId: command.callbackId)
                 }
@@ -84,8 +82,7 @@ enum RecordingResult {
             guard var data = stringData ?? command.argument(at: 0) as? Data, let options = command.argument(at: 1) as? [String: Int],
                 let type = options["type"], let frameTime = options["timestamp"]  else {
                 let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
-                                                       messageAs: "There was an error with the parameters you passed. Please pass first the base64 encoded data" +
-                                                                  "and then the type of the data (0: PNG, 1: byte array)")
+                                                       messageAs: DSError.initParametersAddFrameFailed)
                 self.commandDelegate!.send(pluginResult,
                                            callbackId: command.callbackId)
                 return
@@ -113,7 +110,7 @@ enum RecordingResult {
                        
                     } else {
                         pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
-                                                       messageAs: "Frame wasnt saved")
+                                                       messageAs: DSError.frameWasntSavedError)
                     }
                  self.commandDelegate!.send(pluginResult, callbackId: command.callbackId)
                 }
@@ -121,9 +118,8 @@ enum RecordingResult {
         }
     }
 
-    // objc(saveFrame:)
     private func saveFrame(buffer: CVPixelBuffer, relativeTime interval: TimeInterval, completionHandler handler: @escaping (Bool) -> Void) {
-          let time = floor(interval * 1000)
+          let time = floor(interval)
           debugPrint("Trying to save frame at time: \(time)")
           while processedInputAdaptor?.assetWriterInput.isReadyForMoreMediaData == false {
               //TODO: log message
@@ -145,19 +141,21 @@ enum RecordingResult {
     func end(_ command: CDVInvokedUrlCommand) {
         lock.lock()
         defer { lock.unlock() }
+       
 
         processedWriterInput?.markAsFinished()
         self.processedVideoWriter?.finishWriting(completionHandler: { [weak self] in
-            debugPrint(self?.processedVideoWriter!.status.rawValue)
             let result = ["fileURL": self?.tempFilePath.absoluteString] as [String : Any]
-            PHPhotoLibrary.shared().performChanges({
-             PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: (self?.tempFilePath!)!)
-            }) { saved, error in
-            debugPrint("Tried to camera roll")
-                if saved {
-                    debugPrint("Saved to camera roll")
+             if let saveToRoll = command.argument(at: 0) as? Bool, saveToRoll {
+                PHPhotoLibrary.shared().performChanges({
+                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: (self?.tempFilePath!)!)
+                }) { saved, error in
+                debugPrint("Tried to camera roll")
+                    if saved {
+                        debugPrint("Saved to camera roll")
+                    }
                 }
-             }   
+              }
             let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK,
                                                messageAs: result)
             self?.commandDelegate!.send(pluginResult,
@@ -165,7 +163,6 @@ enum RecordingResult {
         })
     }
 
-    // objc(abortRecording:)
   private func abortRecording() {
         processedWriterInput?.markAsFinished()
         debugPrint("aborted recording")
@@ -173,7 +170,6 @@ enum RecordingResult {
         cleanup()
     }
 
-    // objc(cleanup:)
 private func cleanup() {
         readerOutput = nil
         videoReader = nil
@@ -182,26 +178,23 @@ private func cleanup() {
         cleanUpWriter()
     }
 
-    // objc(cleanUpWriter:)
    private func cleanUpWriter() {
         processedInputAdaptor = nil
         processedWriterInput = nil
         processedVideoWriter = nil
     }
 
-    // objc(setupProcessedVideoWriter:)
     private func setupProcessedVideoWriter(path: URL) throws {
         processedVideoWriter = try AVAssetWriter(outputURL: path, fileType: AVFileType.mov)
         setVideoInputAdaptor()
         if processedVideoWriter!.canAdd(processedWriterInput!) {
             processedVideoWriter!.add(processedWriterInput!)
         } else {
-            let error = DSError.addInputFailed as Error
+            let error = DSError.writerWasntAbleToSetupError as Error
             throw error
         }
     }
 
-    // objc(setVideoInputAdaptor:)
     private func setVideoInputAdaptor() {
         let videoSettings = [AVVideoCodecKey: AVVideoCodecType.jpeg, AVVideoWidthKey: dataWidth, AVVideoHeightKey: dataHeight
                              ,AVVideoCompressionPropertiesKey: [AVVideoQualityKey: NSNumber(floatLiteral: 1.0),

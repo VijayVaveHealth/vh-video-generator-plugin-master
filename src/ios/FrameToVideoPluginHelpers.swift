@@ -212,8 +212,10 @@ struct Constants {
 }
 
 struct DSError {
-    static let addOutputFailed = "Add output failed"
-    static let addInputFailed = "Add input failed"
-    static let noTrackInVideo = "no track in video"
-    static let couldNotCreateTexture = "Could not create texture from pixel buffer"
+    static let initParametersFormatFailed = "Error 1: There was an error with the parameters you passed when creating a dictionary out of the argument"
+    static let initParametersFailed = "Error 2: There was an error with one of the parameters"
+    static let initParametersAddFrameFailed = "Error 3: There was an error with the parameters you passed. Please pass first the base64 encoded data, then then the type of the data (0: PNG, 1: byte array) and last the timestamp"
+    static let frameOutOfOrderError = "Error 4: The added frame was out of order and could not be added"
+    static let frameWasntSavedError = "Error 5: Frame wasnt saved"
+    static let writerWasntAbleToSetupError = "Error 6: Error when creating writer"
 }

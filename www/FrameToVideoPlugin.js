@@ -8,6 +8,6 @@ exports.addFrame = function (imageData, options, success, error) {
     exec(success, error, 'FrameToVideoPlugin', 'addFrame', [imageData, options]);
 };
 
-exports.end = function (success, error) {
-    exec(success, error, 'FrameToVideoPlugin', 'end', []);
+exports.end = function (saveToRoll, success, error ) {
+    exec(success, error, 'FrameToVideoPlugin', 'end', [saveToRoll]);
 };
