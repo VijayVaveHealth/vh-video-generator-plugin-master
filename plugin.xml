@@ -15,4 +15,15 @@
       <source-file src="src/ios/FrameToVideoPluginHelpers.swift" />
       <!-- <dependency id="cordova-plugin-add-swift-support" version="2.0.2"/> -->
     </platform>
+
+    <platform name="android">
+      <config-file target="config.xml" parent="/*">
+        <feature name="FrameToVideoPlugin">
+          <param name="android-package" value="com.xmartlabs.cordova.frame2video.FrameToVideoPlugin" />
+        </feature>
+      </config-file>
+
+      <source-file src="src/android/FramesToVideoConverter.java" target-dir="com/xmartlabs/cordova/frame2video" />
+      <source-file src="src/android/FrameToVideoPlugin.java" target-dir="com/xmartlabs/cordova/frame2video" />
+    </platform>
 </plugin>
