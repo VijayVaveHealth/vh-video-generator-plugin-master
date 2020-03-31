@@ -5,7 +5,6 @@ import android.media.MediaCodecInfo;
 import android.media.MediaCodecList;
 import android.media.MediaFormat;
 import android.media.MediaMuxer;
-import android.util.Base64;
 import android.util.Log;
 
 import java.io.IOException;
@@ -38,10 +37,9 @@ public class FramesToVideoConverter {
         prepareEncoder();
     }
 
-    void  addFrame(long presentationTimeMs, String frameData) throws IOException {
-        byte[] fbytes = Base64.decode(frameData, Base64.DEFAULT);
 
-        IntBuffer intBuf = ByteBuffer.wrap(fbytes).order(ByteOrder.LITTLE_ENDIAN).asIntBuffer();
+    void addFrame(long presentationTimeMs, byte[] bgra) {
+        IntBuffer intBuf = ByteBuffer.wrap(bgra).order(ByteOrder.LITTLE_ENDIAN).asIntBuffer();
         int[] colors = new int[intBuf.remaining()];
         intBuf.get(colors);
         byte[] yuvData = convertToYUV(width, height, colors);

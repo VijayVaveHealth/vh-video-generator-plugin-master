@@ -4,9 +4,12 @@ import android.Manifest;
 import android.app.Activity;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.Environment;
 import android.support.v4.app.ActivityCompat;
+import android.util.Base64;
 import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
@@ -21,6 +24,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.nio.ByteBuffer;
 import java.util.Collections;
 import java.util.UUID;
 
@@ -50,6 +54,7 @@ public class FrameToVideoPlugin extends CordovaPlugin {
                         break;
                 }
             } catch (Exception e) {
+                e.printStackTrace();
                 callbackContext.error(e.getMessage());
             }
         });
@@ -58,6 +63,8 @@ public class FrameToVideoPlugin extends CordovaPlugin {
 
     private void start(JSONArray args, CallbackContext callbackContext) throws JSONException, IOException {
         JSONObject options = args.getJSONObject(0);
+//        int height = 800;
+//        int width = 600;
         int height = options.getInt("height");
         int width = options.getInt("width");
         initTimestamp = options.getLong("timestamp");
@@ -70,7 +77,10 @@ public class FrameToVideoPlugin extends CordovaPlugin {
 
     private void addFrame(JSONArray args, CallbackContext callbackContext) throws JSONException, IOException {
         long timestamp = ((JSONObject) args.get(1)).getLong("timestamp");
-        framesToVideoConverter.addFrame(timestamp - initTimestamp, args.getString(0));
+        int type = ((JSONObject) args.get(1)).getInt("type");
+        String data = args.getString(0);
+        byte[] bgra = getImageBytesFromBase64EncodedString(data, type);
+        framesToVideoConverter.addFrame(timestamp - initTimestamp, bgra);
         callbackContext.success();
     }
 
@@ -135,6 +145,21 @@ public class FrameToVideoPlugin extends CordovaPlugin {
         } catch (IOException e) {
             Log.e(FrameToVideoPlugin.LOG_TAG, "Failed to write video to camera roll.", e);
             endCallbackContext.error(e.getMessage());
+        }
+    }
+
+    private byte[] getImageBytesFromBase64EncodedString(String base64, int type) {
+        if (type == 0) {
+            byte[] decodedByte = Base64.decode(base64, 0);
+            Bitmap bitmap = BitmapFactory.decodeByteArray(decodedByte, 0, decodedByte.length);
+
+            int bytes = bitmap.getByteCount();
+            ByteBuffer buffer = ByteBuffer.allocate(bytes);
+            bitmap.copyPixelsToBuffer(buffer);
+
+            return buffer.array();
+        } else {
+            return Base64.decode(base64, Base64.DEFAULT);
         }
     }
 }
