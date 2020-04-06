@@ -13,6 +13,13 @@ enum RecordingResult {
 
 }
 
+struct Frame {
+
+    let interval: TimeInterval
+    let buffer: CVPixelBuffer
+
+}
+
 @objc(FrameToVideoPlugin) class FrameToVideoPlugin : CDVPlugin{
 
     static let instance = FrameToVideoPlugin()
@@ -40,10 +47,12 @@ enum RecordingResult {
     var dataHeight: Int = 256
     var initialTime: Int = 0
 
+    var frames: [Frame] = []
+
     @objc(start:)
     func start(_ command: CDVInvokedUrlCommand) {
         self.commandDelegate.run() { [unowned self] in
-         guard let options = command.argument(at: 0) as? [String: Int] else {
+         guard let options = command.argument(at: 0) as? [String: Any] else {
              let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
                                                        messageAs: DSError.initParametersFormatFailed)
                 self.commandDelegate!.send(pluginResult,
@@ -53,10 +62,11 @@ enum RecordingResult {
             self.lock.lock()
             defer { self.lock.unlock() }
                 do {
-                    self.dataWidth = options["width"] ?? 256
-                    self.dataHeight = options["height"] ?? 256
-                    self.initialTime = options["timestamp"] ?? 0
-                    self.tempFilePath = newFileUrl()
+                    self.dataWidth = (options["width"] as? Int) ?? 256
+                    self.dataHeight = (options["height"] as? Int) ?? 256
+                    self.initialTime = (options["timestamp"] as? Int) ?? 0
+                    self.tempFilePath = newFileUrl(fileName: options["videoFileName"] as? String)
+                    self.frames = []
                     try self.setupProcessedVideoWriter(path: self.tempFilePath)
                     self.processedVideoWriter?.startWriting()
                     self.processedVideoWriter?.startSession(atSourceTime: CMTime.zero)
@@ -95,8 +105,6 @@ enum RecordingResult {
                 pixelBuffer = image?.pixelBuffer(width: self.dataWidth, height: self.dataHeight)
             } else {
                 // Data is coming as array buffer
-
-                //TODO check color or non color by changing pixel format type
                 let _ = data.withUnsafeMutableBytes { bytes in
                     CVPixelBufferCreateWithBytes(kCFAllocatorDefault, self.dataWidth, self.dataHeight, kCVPixelFormatType_32BGRA, bytes, self.dataWidth * 4, nil, nil, nil, &pixelBuffer)
                 }
@@ -141,25 +149,24 @@ enum RecordingResult {
     func end(_ command: CDVInvokedUrlCommand) {
         lock.lock()
         defer { lock.unlock() }
-       
-
         processedWriterInput?.markAsFinished()
         self.processedVideoWriter?.finishWriting(completionHandler: { [weak self] in
+            debugPrint(self?.processedVideoWriter!.status.rawValue)
             let result = ["fileURL": self?.tempFilePath.absoluteString] as [String : Any]
-             if let saveToRoll = command.argument(at: 0) as? Bool, saveToRoll {
+            if let saveToRoll = command.argument(at: 0) as? Bool, saveToRoll {
                 PHPhotoLibrary.shared().performChanges({
-                PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: (self?.tempFilePath!)!)
+                    PHAssetChangeRequest.creationRequestForAssetFromVideo(atFileURL: (self?.tempFilePath!)!)
                 }) { saved, error in
-                debugPrint("Tried to camera roll")
+                    debugPrint("Tried to camera roll")
                     if saved {
                         debugPrint("Saved to camera roll")
                     }
                 }
-              }
+            }
             let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK,
                                                messageAs: result)
             self?.commandDelegate!.send(pluginResult,
-                    callbackId: command.callbackId)
+                                        callbackId: command.callbackId)
         })
     }
 

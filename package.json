@@ -1,15 +1,17 @@
 {
   "name": "vh-video-generator-plugin",
-  "version": "0.0.2",
+  "version": "2.0.0",
   "description": "A plugin that allows creating videos from frames from Ionic",
   "cordova": {
     "id": "vh-video-generator-plugin",
     "platforms": [
+      "android",
       "ios"
     ]
   },
   "keywords": [
     "ecosystem:cordova",
+    "cordova-android",
     "cordova-ios"
   ],
   "author": "Xmartlabs",
