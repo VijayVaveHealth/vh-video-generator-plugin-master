@@ -7,9 +7,7 @@ import android.support.annotation.Nullable;
 import android.support.v4.app.ActivityCompat;
 import android.util.Log;
 
-import org.apache.cordova.CordovaInterface;
 import org.apache.cordova.CordovaPlugin;
-import org.json.JSONException;
 
 import java.io.File;
 import java.io.IOException;
@@ -18,7 +16,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.UUID;
-import java.util.function.Consumer;
 
 import static com.xmartlabs.cordova.frame2video.FrameToVideoPlugin.LOG_TAG;
 
@@ -82,12 +79,19 @@ class ActionContext {
     }
 
     @NonNull
-    String createVideo() {
+    String finishEncodingVideo() {
         FramesToVideoConverter videoConverter = getVideoConverter();
         synchronized (lock) {
             videoConverter.finish();
         }
         return getVideoFilePath();
+    }
+
+    void cancel() {
+        File file = new File(finishEncodingVideo());
+        if (file.exists()) {
+            file.delete();
+        }
     }
 
     void requestPermissionIfRequired(CordovaPlugin plugin, Context context, String permission,

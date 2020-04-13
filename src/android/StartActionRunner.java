@@ -35,24 +35,23 @@ class StartActionRunner implements ActionRunner {
      * {@inheritDoc}
      *
      * <p>This action will create a new context based on initial parameters -{@code args}- received from Cordova.
-     * This action must be the first one invoked or right after {@link Action#END} has been called. Therefore,
-     * no context is expected at this point, a {@code null} value must be passed in for it.</p>
+     * As this action creates a new context regardless of previous state, any progress made so far for other video will
+     * be lost, if there is any.
+     * </p>
      */
     @Nullable
     @Override
     public void run(@NonNull CordovaPlugin plugin, @NonNull Context appContext, @NonNull CallbackContext callbackContext,
                     @Nullable ActionContext context, @NonNull JSONArray args, @NonNull ActionRunnerCallback callback) throws JSONException, IOException {
-        if (context != null) {
-            callbackContext.error(
-                Error.CONTEXT_ALREADY_INITIALIZED.getErrorMessage("Can't call '%s' action again.", action));
-            callback.call(context);
-            return;
-        }
         if (args.length() == 0) {
             callbackContext.error(
                 Error.INVALID_NUMBER_OF_ARGUMENTS.getErrorMessage("Expected 1, but got %d.", args.length()));
             callback.call(null);
             return;
+        }
+
+        if (context != null) {
+            context.cancel();
         }
 
         JSONObject options = args.getJSONObject(OPTIONS_ARG_INDEX);

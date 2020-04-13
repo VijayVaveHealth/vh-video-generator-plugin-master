@@ -4,9 +4,8 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 
 enum Error {
-    CONTEXT_ALREADY_INITIALIZED("1001", "Context was already initialized."),
-    CONTEXT_NOT_INITIALIZED("1002", "Context was not yet initialized."),
-    ILLEGAL_STATE("1003", "Running in invalid state."),
+    CONTEXT_NOT_INITIALIZED("1001", "Context was not yet initialized."),
+    ILLEGAL_STATE("1002", "Running in invalid state."),
 
     INVALID_NUMBER_OF_ARGUMENTS("1101", "Invalid number of arguments received."),
     INVALID_ARGUMENT_TYPE("1102", "Invalid type for argument."),
