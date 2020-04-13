@@ -47,8 +47,10 @@ class FramesToVideoConverter {
     private int frameRate = 30;
     private boolean initialized = false;
     private MediaCodec mediaCodec;
+    private boolean mediaCodecStarted = false;
     private int mediaCodecColorFormat;
     private MediaMuxer mediaMuxer;
+    private boolean mediaMuxerStarted = false;
     private int videoTrackIndex;
 
     FramesToVideoConverter(@NonNull String outputPath, int width, int height) {
@@ -107,6 +109,7 @@ class FramesToVideoConverter {
         mediaFormat.setInteger(MediaFormat.KEY_I_FRAME_INTERVAL, INFLAME_INTERVAL);
         mediaCodec.configure(mediaFormat, null, null, MediaCodec.CONFIGURE_FLAG_ENCODE);
         mediaCodec.start();
+        mediaCodecStarted = true;
         mediaMuxer = new MediaMuxer(outputPath, MediaMuxer.OutputFormat.MUXER_OUTPUT_MPEG_4);
 
         return true;
@@ -131,6 +134,7 @@ class FramesToVideoConverter {
                 MediaFormat newFormat = mediaCodec.getOutputFormat();
                 videoTrackIndex = mediaMuxer.addTrack(newFormat);
                 mediaMuxer.start();
+                mediaMuxerStarted = true;
                 Log.d(FrameToVideoPlugin.LOG_TAG, "Started media muxer");
             } else if (encoderStatus < 0) {
                 Log.w(FrameToVideoPlugin.LOG_TAG, "Unexpected result from encoder.dequeueOutputBuffer: " + encoderStatus);
@@ -152,13 +156,17 @@ class FramesToVideoConverter {
 
     private void release() {
         if (mediaMuxer != null) {
-            mediaMuxer.stop();
+            if (mediaMuxerStarted) {
+                mediaMuxer.stop();
+            }
             mediaMuxer.release();
             mediaMuxer = null;
             Log.d(FrameToVideoPlugin.LOG_TAG, "Released muxer");
         }
         if (mediaCodec != null) {
-            mediaCodec.stop();
+            if (mediaCodecStarted) {
+                mediaCodec.stop();
+            }
             mediaCodec.release();
             mediaCodec = null;
             Log.d(FrameToVideoPlugin.LOG_TAG, "Released codec");

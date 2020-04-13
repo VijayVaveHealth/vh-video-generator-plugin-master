@@ -54,7 +54,7 @@ class EndActionRunner implements ActionRunner {
             return;
         }
 
-        String videoFilePath = context.createVideo();
+        String videoFilePath = context.finishEncodingVideo();
         boolean saveToCameraRoll = args.length() > 0 && args.getBoolean(EXPORT_TO_CAMERA_ROLL_ARG_INDEX);
         if (saveToCameraRoll) {
             saveVideoToCameraFolder(plugin, context, appContext, callbackContext, videoFilePath, callback);
