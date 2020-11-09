@@ -183,8 +183,14 @@ class FramesToVideoConverter {
             }
             String[] types = codecInfo.getSupportedTypes();
             for (String type : types) {
-                if (type.equalsIgnoreCase(mimeType)) {
-                    return codecInfo;
+                if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q) {
+                    if (type.equalsIgnoreCase(mimeType) && !codecInfo.getCanonicalName().contains("c2.qti.avc")) {
+                        return codecInfo;
+                    }
+                } else {
+                    if (type.equalsIgnoreCase(mimeType)) {
+                      return codecInfo;
+                    }
                 }
             }
         }
