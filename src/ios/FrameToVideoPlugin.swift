@@ -3,6 +3,7 @@ import AVFoundation
 import UIKit
 import CoreMedia
 import Photos
+import Foundation
 
 
 enum RecordingResult {
@@ -65,9 +66,19 @@ struct Frame {
                     self.dataWidth = (options["width"] as? Int) ?? 256
                     self.dataHeight = (options["height"] as? Int) ?? 256
                     self.initialTime = (options["timestamp"] as? Int) ?? 0
-                    self.tempFilePath = newFileUrl(fileName: options["videoFileName"] as? String)
+                    let quality = (options["quality"] as? NSNumber) ?? 0.8
+                    let external = options["external"] as? Bool ?? false
+                    if (external) {
+                        self.tempFilePath = newFileUrlExternal(fileName: options["videoFileName"] as? String)
+                    } else {
+                        self.tempFilePath = newFileUrl(fileName: options["videoFileName"] as? String)
+                    }
+
+                    debugPrint("444 A ================ newFileName: \(self.tempFilePath)")
+                    debugPrint("444 B ================ external: \(external)")
+                    debugPrint("444 C ================ quality: \(quality)")
                     self.frames = []
-                    try self.setupProcessedVideoWriter(path: self.tempFilePath)
+                    try self.setupProcessedVideoWriter(path: self.tempFilePath, quality: quality)
                     self.processedVideoWriter?.startWriting()
                     self.processedVideoWriter?.startSession(atSourceTime: CMTime.zero)
                      let pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
@@ -115,7 +126,7 @@ struct Frame {
                     var pluginResult: CDVPluginResult
                     if saved {
                         pluginResult = CDVPluginResult(status: CDVCommandStatus_OK)
-                       
+
                     } else {
                         pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
                                                        messageAs: DSError.frameWasntSavedError)
@@ -191,9 +202,9 @@ private func cleanup() {
         processedVideoWriter = nil
     }
 
-    private func setupProcessedVideoWriter(path: URL) throws {
+    private func setupProcessedVideoWriter(path: URL, quality: NSNumber) throws {
         processedVideoWriter = try AVAssetWriter(outputURL: path, fileType: AVFileType.mov)
-        setVideoInputAdaptor()
+        setVideoInputAdaptor(quality: quality)
         if processedVideoWriter!.canAdd(processedWriterInput!) {
             processedVideoWriter!.add(processedWriterInput!)
         } else {
@@ -202,10 +213,9 @@ private func cleanup() {
         }
     }
 
-    private func setVideoInputAdaptor() {
-        let videoSettings = [AVVideoCodecKey: AVVideoCodecType.jpeg, AVVideoWidthKey: dataWidth, AVVideoHeightKey: dataHeight
-                             ,AVVideoCompressionPropertiesKey: [AVVideoQualityKey: NSNumber(floatLiteral: 1.0),
-                                                                AVVideoMaxKeyFrameIntervalKey: NSNumber(integerLiteral: 1)]
+    private func setVideoInputAdaptor(quality: NSNumber) {
+        let videoSettings = [AVVideoCodecKey: AVVideoCodecType.h264, AVVideoWidthKey: dataWidth, AVVideoHeightKey: dataHeight
+                             ,AVVideoCompressionPropertiesKey: [AVVideoQualityKey: quality, AVVideoMaxKeyFrameIntervalKey: NSNumber(integerLiteral: 1)]
             ] as [String : Any]
         processedWriterInput = AVAssetWriterInput(mediaType: AVMediaType.video, outputSettings: videoSettings)
         processedWriterInput?.expectsMediaDataInRealTime = true

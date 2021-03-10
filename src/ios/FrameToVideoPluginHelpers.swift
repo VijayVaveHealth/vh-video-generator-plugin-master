@@ -62,19 +62,27 @@ extension UIImage {
 }
 
 
-func newFileUrl(fileName: String?) -> URL {
+func newFileUrlExternal(fileName: String?) -> URL {
     let videoFileName = fileName ?? (String.randomString(length: 6) + ".mp4")
-    let tempPath = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(videoFileName).absoluteString
-    if FileManager.default.fileExists(atPath: tempPath) {
-        do {
-            try FileManager.default.removeItem(atPath: tempPath)
-        } catch {
-            print("Error deleting the existing temporary file")
-        }
+    let path = URL(fileURLWithPath: NSTemporaryDirectory()).appendingPathComponent(videoFileName)
+    do {
+        try FileManager.default.removeItem(at: path)
+    } catch {
+        print("Error deleting the existing temporary file")
     }
-    return URL(string: tempPath)!
+    return path
 }
 
+func newFileUrl(fileName: String?) -> URL {
+    let videoFileName = fileName ?? (String.randomString(length: 6) + ".mp4")
+    let path = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/NoCloud").appendingPathComponent(videoFileName);
+    do {
+        try FileManager.default.removeItem(at: path)
+    } catch {
+        print("============= Error deleting the existing temporary file")
+    }
+    return path
+}
 
 func deleteTemporaryFiles() {
     let tmpDirectory = try? FileManager.default.contentsOfDirectory(atPath: NSTemporaryDirectory())
