@@ -79,7 +79,7 @@ func newFileUrl(fileName: String?) -> URL {
     do {
         try FileManager.default.removeItem(at: path)
     } catch {
-        print("============= Error deleting the existing temporary file")
+        print("Error deleting the existing temporary file")
     }
     return path
 }

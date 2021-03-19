@@ -74,9 +74,6 @@ struct Frame {
                         self.tempFilePath = newFileUrl(fileName: options["videoFileName"] as? String)
                     }
 
-                    debugPrint("444 A ================ newFileName: \(self.tempFilePath)")
-                    debugPrint("444 B ================ external: \(external)")
-                    debugPrint("444 C ================ quality: \(quality)")
                     self.frames = []
                     try self.setupProcessedVideoWriter(path: self.tempFilePath, quality: quality)
                     self.processedVideoWriter?.startWriting()
