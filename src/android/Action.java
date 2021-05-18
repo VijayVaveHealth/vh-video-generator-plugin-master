@@ -25,6 +25,13 @@ enum Action {
             return new StartActionRunner(START);
         }
     },
+    EXTRACT("extract") {
+      @NonNull
+      @Override
+      public ActionRunner newActionRunner() {
+        return new ExtractActionRunner(EXTRACT);
+      }
+    },
     ;
 
     @NonNull

@@ -3,7 +3,8 @@ const PLUGIN_NAME = 'FrameToVideoPlugin';
 const COMMANDS = {
   START: 'start',
   ADD_FRAME: 'addFrame',
-  END: 'end'
+  END: 'end',
+  EXTRACT:'extract'
 };
 
 exports.start = function (options) {
@@ -72,6 +73,28 @@ exports.end = function ({ saveToRoll, timeout }) {
       PLUGIN_NAME,
       COMMANDS.END,
       [saveToRoll]
+    );
+  });
+};
+
+exports.extract = function (options) {
+  return new Promise((resolve, reject) => {
+    const timeoutFn = window.setTimeout(() => {
+      reject('Timeout');
+    }, options.timeout || 1000 * 60);
+
+    exec(
+      res => {
+        resolve(res);
+        window.clearTimeout(timeoutFn);
+      },
+      err => {
+        reject(err);
+        window.clearTimeout(timeoutFn);
+      },
+      PLUGIN_NAME,
+      COMMANDS.EXTRACT,
+      [options]
     );
   });
 };

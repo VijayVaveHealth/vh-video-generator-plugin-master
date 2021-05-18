@@ -39,5 +39,6 @@
       <source-file src="src/android/FrameToVideoPlugin.java" target-dir="com/xmartlabs/cordova/frame2video" />
       <source-file src="src/android/FrameType.java" target-dir="com/xmartlabs/cordova/frame2video" />
       <source-file src="src/android/StartActionRunner.java" target-dir="com/xmartlabs/cordova/frame2video" />
+      <source-file src="src/android/ExtractActionRunner.java" target-dir="com/xmartlabs/cordova/frame2video" />
     </platform>
 </plugin>
