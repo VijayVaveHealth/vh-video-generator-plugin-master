@@ -23,6 +23,8 @@ class StartActionRunner implements ActionRunner {
     private static final String TIMESTAMP_ARG_NAME = "timestamp";
     private static final String BIT_RATE_ARG_NAME = "bit_rate";
     private static final String FRAME_RATE_ARG_NAME = "frame_rate";
+    private static final String QUALITY_ARG_NAME = "quality";
+    private static final String EXTERNAL_ARG_NAME = "external";
 
     @NonNull
     private final Action action;
@@ -56,8 +58,11 @@ class StartActionRunner implements ActionRunner {
 
         JSONObject options = args.getJSONObject(OPTIONS_ARG_INDEX);
         String videoFileName = options.getString(VIDEO_FILE_NAME_ARG_NAME);
+        // Double quality = options.getDouble(QUALITY_ARG_NAME);
+        Boolean external = options.getBoolean(EXTERNAL_ARG_NAME);
+        String videoPath = appContext.getFilesDir().getAbsolutePath() + File.separator + videoFileName;
         ActionContext actionContext = new ActionContext(
-                appContext.getFilesDir().getAbsolutePath() + File.separator + videoFileName,
+                videoPath,
                 options.getInt(WIDTH_ARG_NAME),
                 options.getInt(HEIGHT_ARG_NAME),
                 options.getInt(TIMESTAMP_ARG_NAME));
