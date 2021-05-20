@@ -51,6 +51,7 @@ struct Frame {
     var frames: [Frame] = []
     
     var videoUrl:URL! // use your own url
+    var frameRate:Int = 20
     var framesExtract:[String] = []
     private var generator:AVAssetImageGenerator!
     var frameStartIndex: Int = 0
@@ -196,9 +197,11 @@ struct Frame {
             self.lock.lock()
             defer { self.lock.unlock() }
                 do {
-                    let dataWidth = (options["width"] as? Int) ?? 256
-                    let dataHeight = (options["height"] as? Int) ?? 256
+                    let dataWidth = (options["width"] as? Int) ?? 600
+                    let dataHeight = (options["height"] as? Int) ?? 800
                     self.videoUrl = URL(string: (options["videoFileName"] as? String)!)
+                    self.frameRate = (options["frameRate"] as? Int) ?? 20
+
                     debugPrint("Filename is : " )
                     debugPrint(self.videoUrl)
                     getAllFrames()
@@ -268,16 +271,17 @@ private func cleanup() {
        self.generator = AVAssetImageGenerator(asset:asset)
        self.generator.appliesPreferredTrackTransform = true
        self.framesExtract = []
-        self.frameStartIndex = 0
-        var frameForTimes = [NSValue]()
-        let sampleCounts = 120
-        let totalTimeLength = Int(videoDuration.seconds * Double(videoDuration.timescale))
-        let step = totalTimeLength / sampleCounts
+       self.frameStartIndex = 0
+       var frameForTimes = [NSValue]()
+       let totalTimeLength = Int(videoDuration.seconds * Double(videoDuration.timescale))
+       let timeInSeconds = Int(round(Double(totalTimeLength) / (10000.0)));
+       let sampleCounts =  timeInSeconds * self.frameRate
+       let step = totalTimeLength / sampleCounts
       
-        for i in 0 ..< sampleCounts {
+       for i in 0 ..< sampleCounts {
             let cmTime = CMTimeMake(value: Int64(i * step), timescale: Int32(videoDuration.timescale))
             frameForTimes.append(NSValue(time: cmTime))
-        }
+       }
         self.generator.requestedTimeToleranceAfter = .zero
         self.generator.requestedTimeToleranceBefore = .zero
         // Make `generateCGImagesAsynchronously` synchronous within the current operation.

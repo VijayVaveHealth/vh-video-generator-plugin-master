@@ -25,6 +25,7 @@ public class ExtractActionRunner implements ActionRunner  {
   private static final String VIDEO_FILE_NAME_ARG_NAME = "videoFileName";
   private static final String WIDTH_ARG_NAME = "width";
   private static final String HEIGHT_ARG_NAME = "height";
+  private static final String FRAMERATE_ARG_NAME = "frameRate";
 
   @NonNull
   private final Action action;
@@ -41,6 +42,7 @@ public class ExtractActionRunner implements ActionRunner  {
     String videoPath = options.getString(VIDEO_FILE_NAME_ARG_NAME);
     Integer height = options.getInt(WIDTH_ARG_NAME);
     Integer width = options.getInt(HEIGHT_ARG_NAME);
+    Integer frameRate = options.getInt(FRAMERATE_ARG_NAME);
 
     ArrayList<String> frameList;
     /* MediaMetadataRetriever class is used to retrieve meta data from methods. */
@@ -57,7 +59,7 @@ public class ExtractActionRunner implements ActionRunner  {
 
     int duration_millisec = Integer.parseInt(duration); //duration in millisec
     int duration_second = duration_millisec / 1000;  //millisec to sec.
-    int frames_per_second = 20;  //no. of frames want to retrieve per second
+    int frames_per_second = frameRate;  //no. of frames want to retrieve per second
     int numeroFrameCaptured = frames_per_second * duration_second;
     int time_microseconds = duration_millisec * 1000;
     int step = time_microseconds / numeroFrameCaptured;
