@@ -6,7 +6,6 @@ import android.media.MediaMetadataRetriever;
 import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.util.Base64;
-import android.util.Log;
 
 import org.apache.cordova.CallbackContext;
 import org.apache.cordova.CordovaPlugin;
@@ -15,12 +14,9 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.ByteArrayOutputStream;
-import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Collections;
 
-import static android.media.MediaMetadataRetriever.OPTION_CLOSEST;
 import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
 
 public class ExtractActionRunner implements ActionRunner  {
@@ -47,7 +43,6 @@ public class ExtractActionRunner implements ActionRunner  {
     Integer width = options.getInt(HEIGHT_ARG_NAME);
 
     ArrayList<String> frameList;
-    ArrayList<Long> frameTimes;
     /* MediaMetadataRetriever class is used to retrieve meta data from methods. */
     MediaMetadataRetriever retriever = new MediaMetadataRetriever();
     try {
@@ -58,42 +53,27 @@ public class ExtractActionRunner implements ActionRunner  {
     }
     // created an arraylist of bitmap that will store your frames
     frameList = new ArrayList<>();
-    frameTimes = new ArrayList<>();
     String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
-    String frameRate = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_CAPTURE_FRAMERATE);
 
     int duration_millisec = Integer.parseInt(duration); //duration in millisec
     int duration_second = duration_millisec / 1000;  //millisec to sec.
     int frames_per_second = 20;  //no. of frames want to retrieve per second
     int numeroFrameCaptured = frames_per_second * duration_second;
     int time_microseconds = duration_millisec * 1000;
-    //int step = time_microseconds / numeroFrameCaptured;
-//    let sampleCounts = 120
-//    let totalTimeLength = Int(videoDuration.seconds * Double(videoDuration.timescale))
-//    let step = totalTimeLength / sampleCounts
-//
-//    for i in 0 ..< sampleCounts {
-//      let cmTime = CMTimeMake(value: Int64(i * step), timescale: Int32(videoDuration.timescale))
-//      frameForTimes.append(NSValue(time: cmTime))
-//    }
-//    for(int i=0;i<numeroFrameCaptured;i+=1)
-//    {
-//      frameTimes.add((long) (step * i));
-//    }
-//    for (int i = 0; i < numeroFrameCaptured; i++)
-//    {
-//      //setting time position at which you want to retrieve frames
-//      Bitmap bitmap= retriever.getFrameAtTime(frameTimes.get(i));
-//      String img = encodeToBase64(bitmap);
-//      frameList.add(img);
-//    }
-    int step = 1000000 / 20;
-    for(int i=0;i<duration_millisec*1000;i+=step){
-      Bitmap bitmap= retriever.getFrameAtTime(i,OPTION_CLOSEST);
+    int step = time_microseconds / numeroFrameCaptured;
+
+    for(int i=0;i<duration_millisec * 1000;i+=step)
+    {
+      Bitmap bitmap= null;
+      if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
+        bitmap = retriever.getScaledFrameAtTime(i,OPTION_CLOSEST_SYNC, width, height);
+      } else {
+        bitmap = retriever.getFrameAtTime(i,OPTION_CLOSEST_SYNC);
+      }
       String img = encodeToBase64(bitmap);
       frameList.add(img);
+      bitmap.recycle();
     }
-
 
     JSONArray jsArray = new JSONArray(frameList);
 
@@ -107,9 +87,7 @@ public class ExtractActionRunner implements ActionRunner  {
     ByteArrayOutputStream baos = new ByteArrayOutputStream();
     immagex.compress(Bitmap.CompressFormat.PNG, 100, baos);
     byte[] b = baos.toByteArray();
-    String imageEncoded = Base64.encodeToString(b, Base64.DEFAULT);
-
-    Log.e("LOOK", imageEncoded);
+    String imageEncoded = Base64.encodeToString(b, Base64.NO_WRAP);
     return imageEncoded;
   }
 }
