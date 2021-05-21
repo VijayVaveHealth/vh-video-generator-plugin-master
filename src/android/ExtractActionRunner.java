@@ -17,7 +17,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
 
-import static android.media.MediaMetadataRetriever.OPTION_CLOSEST_SYNC;
+import static android.media.MediaMetadataRetriever.OPTION_CLOSEST;
 
 public class ExtractActionRunner implements ActionRunner  {
   private static final int OPTIONS_ARG_INDEX = 0;
@@ -58,7 +58,7 @@ public class ExtractActionRunner implements ActionRunner  {
     String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 
     int duration_millisec = Integer.parseInt(duration); //duration in millisec
-    int duration_second = duration_millisec / 1000;  //millisec to sec.
+    int duration_second = (int) Math.ceil(duration_millisec / 1000.0);  //millisec to sec.
     int frames_per_second = frameRate;  //no. of frames want to retrieve per second
     int numeroFrameCaptured = frames_per_second * duration_second;
     int time_microseconds = duration_millisec * 1000;
@@ -68,9 +68,9 @@ public class ExtractActionRunner implements ActionRunner  {
     {
       Bitmap bitmap= null;
       if (android.os.Build.VERSION.SDK_INT >= android.os.Build.VERSION_CODES.O_MR1) {
-        bitmap = retriever.getScaledFrameAtTime(i,OPTION_CLOSEST_SYNC, width, height);
+        bitmap = retriever.getScaledFrameAtTime(i,OPTION_CLOSEST, width, height);
       } else {
-        bitmap = retriever.getFrameAtTime(i,OPTION_CLOSEST_SYNC);
+        bitmap = retriever.getFrameAtTime(i,OPTION_CLOSEST);
       }
       String img = encodeToBase64(bitmap);
       frameList.add(img);
