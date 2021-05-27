@@ -9,6 +9,13 @@ interface VideoOptions {
   external: boolean;
 }
 
+interface ExtractVideoOptions {
+  videoFileName: string;
+  width: number;
+  height: number;
+  frameRate?: number;
+}
+
 interface VideoEndOptions {
   saveToRoll: boolean;
 }
@@ -26,6 +33,8 @@ interface IVideoGenerator {
   addFrame(imageData: string | Uint8Array, options: FrameOptions): Promise<string>;
 
   end(options: VideoEndOptions): Promise<string>;
+
+  extract(options: ExtractVideoOptions): Promise<string>;
 }
 
 declare const VideoGenerator: IVideoGenerator;

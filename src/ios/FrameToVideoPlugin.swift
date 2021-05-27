@@ -49,6 +49,12 @@ struct Frame {
     var initialTime: Int = 0
 
     var frames: [Frame] = []
+    
+    var videoUrl:URL! // use your own url
+    var frameRate:Int = 20
+    var framesExtract:[String] = []
+    private var generator:AVAssetImageGenerator!
+    var frameStartIndex: Int = 0
 
     @objc(start:)
     func start(_ command: CDVInvokedUrlCommand) {
@@ -178,6 +184,43 @@ struct Frame {
         })
     }
 
+    @objc(extract:)
+    func extract(_ command: CDVInvokedUrlCommand) {
+           self.commandDelegate.run() { [unowned self] in
+         guard let options = command.argument(at: 0) as? [String: Any] else {
+             let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
+                                                       messageAs: DSError.initParametersFormatFailed)
+                self.commandDelegate!.send(pluginResult,
+                                           callbackId: command.callbackId)
+                return
+         }
+            self.lock.lock()
+            defer { self.lock.unlock() }
+                do {
+                    let dataWidth = (options["width"] as? Int) ?? 600
+                    let dataHeight = (options["height"] as? Int) ?? 800
+                    self.videoUrl = URL(string: (options["videoFileName"] as? String)!)
+                    self.frameRate = (options["frameRate"] as? Int) ?? 20
+
+                    debugPrint("Filename is : " )
+                    debugPrint(self.videoUrl)
+                    getAllFrames()
+                    let pluginResult = CDVPluginResult(
+                            status: CDVCommandStatus_OK,
+                            messageAs: self.framesExtract
+                    )
+                     self.commandDelegate!.send(pluginResult,
+                                       callbackId: command.callbackId)
+                } catch {
+                    let pluginResult = CDVPluginResult(status: CDVCommandStatus_ERROR,
+                                                       messageAs: DSError.initParametersFailed)
+                self.commandDelegate!.send(pluginResult,
+                                           callbackId: command.callbackId)
+                }
+        }
+     
+    }
+
   private func abortRecording() {
         processedWriterInput?.markAsFinished()
         debugPrint("aborted recording")
@@ -220,6 +263,55 @@ private func cleanup() {
             NSNumber(value: Int32(Constants.pixelFormat))] as [String: Any]
         processedInputAdaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: processedWriterInput!,
                                                                      sourcePixelBufferAttributes: bufferAttributes)
+    }
+    
+    private func getAllFrames() {
+       let asset:AVAsset = AVAsset(url:self.videoUrl)
+       let videoDuration = asset.duration
+       self.generator = AVAssetImageGenerator(asset:asset)
+       self.generator.appliesPreferredTrackTransform = true
+       self.framesExtract = []
+       self.frameStartIndex = 0
+       var frameForTimes = [NSValue]()
+       let totalTimeLength = Int(videoDuration.seconds * Double(videoDuration.timescale))
+       let timeInSeconds = Int(round(Double(totalTimeLength) / (10000.0)));
+       let sampleCounts =  timeInSeconds * self.frameRate
+       let step = totalTimeLength / sampleCounts
+      
+       for i in 0 ..< sampleCounts {
+            let cmTime = CMTimeMake(value: Int64(i * step), timescale: Int32(videoDuration.timescale))
+            frameForTimes.append(NSValue(time: cmTime))
+       }
+        self.generator.requestedTimeToleranceAfter = .zero
+        self.generator.requestedTimeToleranceBefore = .zero
+        // Make `generateCGImagesAsynchronously` synchronous within the current operation.
+        let block = DispatchGroup()
+        block.enter()
+        // Can be safely modified from the generator's callbacks' threads as they are
+        // strictly sequential.
+        var countProcessed = 0
+
+       self.generator.generateCGImagesAsynchronously(forTimes: frameForTimes, completionHandler: {requestedTime, image, actualTime, result, error in
+               DispatchQueue.main.async {
+                   if let image = image {
+                       print(requestedTime.value, requestedTime.seconds, actualTime.value)
+                    self.framesExtract.append(self.convertImageToBase64String(img: UIImage(cgImage: image)))
+                   }
+                
+                countProcessed += 1
+
+                if countProcessed == frameForTimes.count {
+                    block.leave()
+                }
+               }
+           })
+        block.wait()
+        
+       self.generator = nil
+    }
+    
+    func convertImageToBase64String (img: UIImage) -> String {
+        return img.pngData()?.base64EncodedString() ?? ""
     }
 
 }
