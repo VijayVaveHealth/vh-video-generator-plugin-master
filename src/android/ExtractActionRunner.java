@@ -16,6 +16,7 @@ import org.json.JSONObject;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.io.File;
 
 import static android.media.MediaMetadataRetriever.OPTION_CLOSEST;
 
@@ -39,10 +40,11 @@ public class ExtractActionRunner implements ActionRunner  {
   public void run(@NonNull CordovaPlugin plugin, @NonNull Context appContext, @NonNull CallbackContext callbackContext, @Nullable ActionContext context, @NonNull JSONArray args, @NonNull ActionRunnerCallback callback) throws JSONException, IOException {
 
     JSONObject options = args.getJSONObject(OPTIONS_ARG_INDEX);
-    String videoPath = options.getString(VIDEO_FILE_NAME_ARG_NAME);
+    String videoFileName = options.getString(VIDEO_FILE_NAME_ARG_NAME);
     Integer height = options.getInt(WIDTH_ARG_NAME);
     Integer width = options.getInt(HEIGHT_ARG_NAME);
     Integer frameRate = options.getInt(FRAMERATE_ARG_NAME);
+    String videoPath = appContext.getFilesDir().getAbsolutePath() + File.separator + videoFileName;
 
     ArrayList<String> frameList;
     /* MediaMetadataRetriever class is used to retrieve meta data from methods. */
@@ -58,9 +60,8 @@ public class ExtractActionRunner implements ActionRunner  {
     String duration = retriever.extractMetadata(MediaMetadataRetriever.METADATA_KEY_DURATION);
 
     int duration_millisec = Integer.parseInt(duration); //duration in millisec
-    int duration_second = (int) Math.ceil(duration_millisec / 1000.0);  //millisec to sec.
     int frames_per_second = frameRate;  //no. of frames want to retrieve per second
-    int numeroFrameCaptured = frames_per_second * duration_second;
+    int numeroFrameCaptured = frames_per_second * duration_millisec / 1000;
     int time_microseconds = duration_millisec * 1000;
     int step = time_microseconds / numeroFrameCaptured;
 

@@ -49,7 +49,7 @@ struct Frame {
     var initialTime: Int = 0
 
     var frames: [Frame] = []
-    
+
     var videoUrl:URL! // use your own url
     var frameRate:Int = 20
     var framesExtract:[String] = []
@@ -199,12 +199,12 @@ struct Frame {
                 do {
                     let dataWidth = (options["width"] as? Int) ?? 600
                     let dataHeight = (options["height"] as? Int) ?? 800
-                    self.videoUrl = URL(string: (options["videoFileName"] as? String)!)
+                    let videoFileName = (options["videoFileName"] as? String) ?? ""
+                    self.videoUrl = URL(fileURLWithPath: NSHomeDirectory()).appendingPathComponent("Library/NoCloud").appendingPathComponent(videoFileName);
                     self.frameRate = (options["frameRate"] as? Int) ?? 20
 
                     debugPrint("Filename is : " )
-                    debugPrint(self.videoUrl)
-                    getAllFrames()
+                    try getAllFrames()
                     let pluginResult = CDVPluginResult(
                             status: CDVCommandStatus_OK,
                             messageAs: self.framesExtract
@@ -218,7 +218,7 @@ struct Frame {
                                            callbackId: command.callbackId)
                 }
         }
-     
+
     }
 
   private func abortRecording() {
@@ -264,8 +264,8 @@ private func cleanup() {
         processedInputAdaptor = AVAssetWriterInputPixelBufferAdaptor(assetWriterInput: processedWriterInput!,
                                                                      sourcePixelBufferAttributes: bufferAttributes)
     }
-    
-    private func getAllFrames() {
+
+    private func getAllFrames() throws {
        let asset:AVAsset = AVAsset(url:self.videoUrl)
        let videoDuration = asset.duration
        self.generator = AVAssetImageGenerator(asset:asset)
@@ -273,11 +273,14 @@ private func cleanup() {
        self.framesExtract = []
        self.frameStartIndex = 0
        var frameForTimes = [NSValue]()
-       let totalTimeLength = Int(videoDuration.seconds * Double(videoDuration.timescale))
-       let timeInSeconds = Int(round(Double(totalTimeLength) / (10000.0)));
-       let sampleCounts =  timeInSeconds * self.frameRate
+       let totalTimeLength = Int(videoDuration.value);
+       let timeInSeconds = CMTimeGetSeconds(videoDuration)
+       let sampleCounts =  Int(timeInSeconds * Double(self.frameRate))
+       if (sampleCounts == 0) {
+        throw "Wrong cine duration"
+       }
        let step = totalTimeLength / sampleCounts
-      
+
        for i in 0 ..< sampleCounts {
             let cmTime = CMTimeMake(value: Int64(i * step), timescale: Int32(videoDuration.timescale))
             frameForTimes.append(NSValue(time: cmTime))
@@ -297,7 +300,7 @@ private func cleanup() {
                        print(requestedTime.value, requestedTime.seconds, actualTime.value)
                     self.framesExtract.append(self.convertImageToBase64String(img: UIImage(cgImage: image)))
                    }
-                
+
                 countProcessed += 1
 
                 if countProcessed == frameForTimes.count {
@@ -306,10 +309,10 @@ private func cleanup() {
                }
            })
         block.wait()
-        
+
        self.generator = nil
     }
-    
+
     func convertImageToBase64String (img: UIImage) -> String {
         return img.pngData()?.base64EncodedString() ?? ""
     }
